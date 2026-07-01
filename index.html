@@ -42,7 +42,7 @@
             letter-spacing: -0.2px;
             font-stretch: expanded;
         }
-        input, textarea {
+        input {
             -webkit-user-select: text !important;
             user-select: text !important;
         }
@@ -53,7 +53,6 @@
             flex-direction: column;
             gap: 16px;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -90,7 +89,6 @@
             flex-shrink: 0;
             margin-left: 12px;
         }
-
         .panel-overlay {
             position: fixed;
             top: 0;
@@ -115,7 +113,7 @@
             background: #FFFEFB;
             z-index: 210;
             box-shadow: -4px 0 30px rgba(0,0,0,0.1);
-            transition: right 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            transition: right 0.35s;
             padding: 60px 20px 30px;
             display: flex;
             flex-direction: column;
@@ -196,7 +194,6 @@
             stroke: var(--khaki);
             stroke-width: 3;
             stroke-linecap: round;
-            transition: stroke-dashoffset 0.5s ease;
         }
         .wr-fill.done {
             stroke: var(--win);
@@ -258,9 +255,7 @@
             color: var(--text-light);
             font-style: italic;
             text-align: center;
-            letter-spacing: 0.2px;
         }
-
         .cal-modal {
             position: fixed;
             top: 0;
@@ -307,9 +302,6 @@
             cursor: pointer;
             font-family: inherit;
             color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .cal-grid {
             display: grid;
@@ -325,9 +317,6 @@
             cursor: pointer;
             padding: 3px 0;
             border-radius: 8px;
-        }
-        .cal-cell-wrap:active {
-            background: #F8F6F2;
         }
         .cal-num {
             font-size: 11px;
@@ -362,18 +351,6 @@
         .cmr-fill.done {
             stroke: var(--win);
         }
-        .cal-close {
-            display: block;
-            margin: 16px auto 0;
-            padding: 8px 20px;
-            border-radius: 15px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
         .card {
             background: var(--card);
             border-radius: var(--radius);
@@ -488,20 +465,17 @@
             border-color: #E5CCCC;
             color: #8B5555;
         }
-
         .game-log-toggle {
             font-size: 10px;
             color: var(--text-light);
             cursor: pointer;
             text-align: center;
             padding: 4px 0;
-            letter-spacing: 0.3px;
         }
         .game-log-list {
             display: none;
-            max-height: 150px;
+            max-height: 120px;
             overflow-y: auto;
-            padding: 4px 0;
         }
         .game-log-list.show {
             display: block;
@@ -514,24 +488,22 @@
             border-bottom: 1px solid #F5F3EF;
             gap: 6px;
         }
-        .game-log-item .gl-reason {
+        .gl-reason {
             flex: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: var(--text);
         }
-        .game-log-item .gl-type {
+        .gl-type {
             font-weight: 500;
             font-size: 9px;
         }
-        .game-log-item .gl-type.win {
+        .gl-type.win {
             color: var(--win);
         }
-        .game-log-item .gl-type.lose {
+        .gl-type.lose {
             color: var(--lose);
         }
-
         .mini-cal {
             display: flex;
             gap: 4px;
@@ -579,7 +551,6 @@
             font-weight: 500;
             color: var(--text);
         }
-
         .chain-card {
             background: var(--card);
             border-radius: var(--radius);
@@ -593,11 +564,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        .chain-nav {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
         .chain-nav button {
             width: 24px;
             height: 24px;
@@ -608,9 +574,6 @@
             cursor: pointer;
             font-family: inherit;
             color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .chain-date {
             font-size: 13px;
@@ -661,7 +624,7 @@
             stroke: var(--khaki);
             stroke-width: 4;
             stroke-linecap: round;
-            transition: stroke-dashoffset 0.6s ease;
+            transition: stroke-dashoffset 0.6s;
         }
         .cr-fill.complete {
             stroke: var(--win);
@@ -801,7 +764,6 @@
             cursor: pointer;
             font-family: inherit;
         }
-
         .stopwatch-card {
             background: var(--card);
             border-radius: var(--radius);
@@ -893,7 +855,6 @@
             cursor: pointer;
             font-size: 12px;
         }
-
         .stats {
             display: flex;
             gap: 6px;
@@ -916,7 +877,6 @@
             letter-spacing: 0.6px;
             color: var(--text-light);
         }
-
         .toast {
             position: fixed;
             bottom: 30px;
@@ -997,70 +957,45 @@
 </head>
 <body>
     <div class="app">
-        <div class="header">
-            <div class="titles"><h1>the best version of myself</h1><div class="sub">vs. the minute desire</div></div>
-            <button class="menu-btn" id="menuBtn">☰</button>
-        </div>
+        <div class="header"><div class="titles"><h1>the best version of myself</h1><div class="sub">vs. the minute desire</div></div><button class="menu-btn" onclick="togglePanel()">☰</button></div>
         <div class="manifest-box" id="manifestBox"></div>
         <div class="card">
-            <div class="score-row">
-                <div class="score-box"><div class="label">Wins</div><div class="val" id="winScore">0</div></div>
-                <div class="score-box"><div class="label">Impulses</div><div class="val" id="impulseScore">0</div></div>
-            </div>
+            <div class="score-row"><div class="score-box"><div class="label">Wins</div><div class="val" id="winScore">0</div></div><div class="score-box"><div class="label">Impulses</div><div class="val" id="impulseScore">0</div></div></div>
             <div class="streak-row" id="streakDots"></div>
             <div class="bar-wrap"><div class="bar-label"><span id="ratioText">0:0</span><span>Goal 70%</span></div><div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div></div>
             <div class="input-row"><input type="text" id="gameInput" placeholder="What happened?" maxlength="60"></div>
-            <div class="btn-row"><button class="btn btn-win" id="gameWinBtn">I Won</button><button class="btn btn-lose" id="gameLoseBtn">Impulse</button></div>
-            <div class="game-log-toggle" id="gameLogToggle">Today's moments ▾</div>
+            <div class="btn-row"><button class="btn btn-win" onclick="recordGame('win')">I Won</button><button class="btn btn-lose" onclick="recordGame('lose')">Impulse</button></div>
+            <div class="game-log-toggle" onclick="toggleGameLog()" id="gameLogToggle">Today's moments ▾</div>
             <div class="game-log-list" id="gameLogList"></div>
         </div>
         <div class="mini-cal" id="miniCal"></div>
         <div class="chain-card">
-            <div class="chain-top"><div class="chain-ring-row"><div class="chain-ring-container"><svg class="chain-ring-svg" viewBox="0 0 44 44"><circle class="cr-bg" cx="22" cy="22" r="18"/><circle class="cr-fill" id="chainRingFill" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/></svg><div class="cr-text" id="chainRingText">0%</div></div><div><div class="chain-nav"><button id="chainPrevBtn">←</button><div style="text-align:center;"><div class="chain-date" id="chainDate"></div><div class="chain-today-badge" id="chainTodayBadge"></div></div><button id="chainNextBtn">→</button></div><span class="chain-status no" id="chainStatus">incomplete</span></div></div></div>
+            <div class="chain-top"><div class="chain-ring-row"><div class="chain-ring-container"><svg class="chain-ring-svg" viewBox="0 0 44 44"><circle class="cr-bg" cx="22" cy="22" r="18"/><circle class="cr-fill" id="chainRingFill" cx="22" cy="22" r="18" stroke-dasharray="113.1" stroke-dashoffset="113.1"/></svg><div class="cr-text" id="chainRingText">0%</div></div><div><div class="chain-nav"><button onclick="prevDay()">←</button><div style="text-align:center;"><div class="chain-date" id="chainDate"></div><div class="chain-today-badge" id="chainTodayBadge"></div></div><button onclick="nextDay()">→</button></div><span class="chain-status no" id="chainStatus">incomplete</span></div></div></div>
             <div id="taskList"></div>
-            <div class="add-row"><input type="text" class="name" id="newTaskName" placeholder="+ task" maxlength="50"><input type="text" class="time" id="newTaskStart" placeholder="start" maxlength="8"><input type="text" class="time" id="newTaskEnd" placeholder="end" maxlength="8"><button id="addTaskBtn">Add</button></div>
-            <div class="actions"><button id="dupTomorrowBtn">↻ Dup to Tomorrow</button><button id="dupWeekBtn">↻ Dup 7 Days</button><button id="resetDayBtn">Reset Day</button></div>
+            <div class="add-row"><input type="text" class="name" id="newTaskName" placeholder="+ task" maxlength="50"><input type="text" class="time" id="newTaskStart" placeholder="start" maxlength="8"><input type="text" class="time" id="newTaskEnd" placeholder="end" maxlength="8"><button onclick="addTask()">Add</button></div>
+            <div class="actions"><button onclick="dupPrev()">↻ Dup to Previous</button><button onclick="dupNext()">↻ Dup to Tomorrow</button><button onclick="dupWeek()">↻ Dup 7 Days</button><button onclick="resetDay()">Reset Day</button></div>
         </div>
-        <div class="stopwatch-card"><h3>Stopwatch</h3><div class="sw-display" id="swDisplay">00:00:00</div><input type="text" class="sw-task-input" id="swTaskName" placeholder="What are you working on?" maxlength="50"><div class="sw-btns"><button class="sw-btn start" id="swStartBtn">Start</button><button class="sw-btn stop" id="swStopBtn">Stop</button><button class="sw-btn" id="swResetBtn">Reset</button></div><div class="sw-history" id="swHistory"></div></div>
+        <div class="stopwatch-card"><h3>Stopwatch</h3><div class="sw-display" id="swDisplay">00:00:00</div><input type="text" class="sw-task-input" id="swTaskName" placeholder="What are you working on?" maxlength="50"><div class="sw-btns"><button class="sw-btn start" onclick="swStart()">Start</button><button class="sw-btn stop" onclick="swStop()">Stop</button><button class="sw-btn" onclick="swReset()">Reset</button></div><div class="sw-history" id="swHistory"></div></div>
         <div class="stats"><div class="stat"><div class="v" id="streakDays">0</div><div class="l">Day Streak</div></div><div class="stat"><div class="v" id="totalDone">0</div><div class="l">Chains Done</div></div><div class="stat"><div class="v" id="totalMissed">0</div><div class="l">Missed</div></div></div>
         <div class="toast" id="toast"></div>
     </div>
-    <div class="panel-overlay" id="panelOverlay"></div>
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
     <div class="slide-panel" id="slidePanel">
-        <button class="panel-close" id="panelCloseBtn">×</button>
+        <button class="panel-close" onclick="closePanel()">×</button>
         <div class="panel-section"><div class="section-title">This Week</div><div class="week-rings" id="weekRings"></div></div>
-        <div class="panel-section"><div class="section-title">Goals</div><div class="goals-summary" id="goalsSummary"></div><div class="goals-expanded" id="goalsExpanded"></div><div style="display:flex;gap:4px;"><input type="text" id="newGoalInput" placeholder="+ goal" maxlength="40" style="flex:1;padding:7px 8px;border-radius:5px;border:1px solid var(--border);font-size:11px;background:#FAFAF8;outline:none;font-family:inherit;"><button id="addGoalBtn" style="padding:7px 10px;border-radius:5px;border:1px solid var(--border);background:var(--card);font-size:11px;cursor:pointer;font-family:inherit;">Add</button></div></div>
-        <div class="panel-section"><div class="section-title">Navigation</div><button class="panel-btn" id="panelCalBtn">Full Calendar</button><button class="panel-btn" id="panelTodayBtn">Go to Today</button></div>
-        <div class="panel-section"><div class="section-title">Backup</div><button class="panel-btn" id="exportBtn">Export Data</button><button class="panel-btn" id="importBtn">Import Data</button><input type="file" id="importFile" accept=".json" style="display:none;"></div>
-        <div class="panel-section"><div class="section-title">Data</div><button class="panel-btn danger" id="panelResetBtn">Reset All Progress</button></div>
+        <div class="panel-section"><div class="section-title">Goals</div><div class="goals-summary" onclick="toggleGoals()" id="goalsSummary"></div><div class="goals-expanded" id="goalsExpanded"></div><div style="display:flex;gap:4px;"><input type="text" id="newGoalInput" placeholder="+ goal" maxlength="40" style="flex:1;padding:7px 8px;border-radius:5px;border:1px solid var(--border);font-size:11px;background:#FAFAF8;outline:none;font-family:inherit;"><button onclick="addGoal()" style="padding:7px 10px;border-radius:5px;border:1px solid var(--border);background:var(--card);font-size:11px;cursor:pointer;font-family:inherit;">Add</button></div></div>
+        <div class="panel-section"><div class="section-title">Navigation</div><button class="panel-btn" onclick="openCalendar()">Full Calendar</button><button class="panel-btn" onclick="goToday()">Go to Today</button></div>
+        <div class="panel-section"><div class="section-title">Backup</div><button class="panel-btn" onclick="exportData()">Export Data</button><button class="panel-btn" onclick="document.getElementById('importFile').click()">Import Data</button><input type="file" id="importFile" accept=".json" onchange="importData(this.files[0])" style="display:none;"></div>
+        <div class="panel-section"><div class="section-title">Data</div><button class="panel-btn danger" onclick="resetAll()">Reset All Progress</button></div>
     </div>
-    <div class="cal-modal" id="calModal"><div class="cal-modal-card"><div class="cal-month-header"><button id="calPrevMonth">←</button><span id="calMonthTitle"></span><button id="calNextMonth">→</button></div><div class="cal-grid" id="calGrid"></div><button class="cal-close" id="calCloseBtn">Close</button></div></div>
-    <div class="modal" id="motiveModal"><div class="modal-card"><div class="modal-q" id="motiveQuote"></div><div class="modal-sub" id="motiveSub"></div><button class="modal-btn" id="motiveCloseBtn">Thank you</button></div></div>
+    <div class="cal-modal" id="calModal" onclick="if(event.target===this)this.classList.remove('show')"><div class="cal-modal-card"><div class="cal-month-header"><button onclick="calPrev()">←</button><span id="calMonthTitle"></span><button onclick="calNext()">→</button></div><div class="cal-grid" id="calGrid"></div><button class="cal-close" onclick="closeCalendar()">Close</button></div></div>
+    <div class="modal" id="motiveModal" onclick="if(event.target===this)this.classList.remove('show')"><div class="modal-card"><div class="modal-q" id="motiveQuote"></div><div class="modal-sub" id="motiveSub"></div><button class="modal-btn" onclick="closeLetter()">Thank you</button></div></div>
 
     <script>
-        const STORAGE = 'bm_final_v4';
+        const STORAGE = 'bm_v8';
         function load() {
-            const allKeys = [];
-            for (let i = 0; i < localStorage.length; i++) allKeys.push(localStorage.key(i));
-            let r = localStorage.getItem(STORAGE);
-            if (r) { try { const d = JSON.parse(r); if (d && d.tasks && d.done) return d; } catch (e) {} }
-            let best = null, bestScore = 0;
-            for (const key of allKeys) {
-                r = localStorage.getItem(key);
-                if (!r) continue;
-                try {
-                    const data = JSON.parse(r);
-                    if (data && data.tasks && Array.isArray(data.tasks) && data.done) {
-                        let score = data.tasks.length;
-                        if (data.future) score += Object.keys(data.future).length * 5;
-                        if (data.wins) score += data.wins * 2;
-                        if (data.goals) score += data.goals.length * 3;
-                        if (score > bestScore) { bestScore = score;
-                            best = data; }
-                    }
-                } catch (e) {}
-            }
-            if (best) { localStorage.setItem(STORAGE, JSON.stringify(best)); return best; }
+            const r = localStorage.getItem(STORAGE);
+            if (r) { try { return JSON.parse(r); } catch (e) {} }
             return { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, today: {}, nextId: 2, future: {}, swHistory: {}, goals: [{ id: 1, name: 'Read 12 books', done: false }], nextGoalId: 2, gameLog: {} };
         }
         function save() { localStorage.setItem(STORAGE, JSON.stringify(D)); }
@@ -1074,169 +1009,137 @@
         const RING = 2 * Math.PI * 18;
 
         let swInterval = null, swSeconds = 0;
-        function loadSw() {
-            const today = tk();
-            if (!D.swHistory) D.swHistory = {};
-            if (!D.swHistory[today]) D.swHistory[today] = [];
-            swSeconds = 0;
-            swUpdate();
-            renderSwHistory();
-        }
         function swFmt(s) { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60; return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0'); }
         function swUpdate() { $('swDisplay').textContent = swFmt(swSeconds); }
-        function renderSwHistory() {
-            const today = tk();
-            const history = D.swHistory[today] || [];
-            if (history.length === 0) { $('swHistory').innerHTML = '<div style="font-size:10px;color:#C5C5C5;text-align:center;padding:10px 0;">No records today</div>'; return; }
-            $('swHistory').innerHTML = history.slice().reverse().map((h, i) => '<div class="sw-history-item"><span class="sw-h-task">' + esc(h.task) + '</span><span class="sw-h-time">' + swFmt(h.seconds) + '</span><span class="sw-h-del" data-idx="' + (history.length - 1 - i) + '">×</span></div>').join('');
-            $('swHistory').querySelectorAll('.sw-h-del').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation();
-                D.swHistory[today].splice(parseInt(el.dataset.idx), 1);
-                save();
-                renderSwHistory(); }); });
-        }
-        $('swStartBtn').addEventListener('click', () => { if (swInterval) return;
+
+        function swStart() { if (swInterval) return;
             swInterval = setInterval(() => { swSeconds++;
                 swUpdate(); }, 1000);
-            $('swStartBtn').textContent = 'Running...'; });
-        $('swStopBtn').addEventListener('click', () => { if (!swInterval && swSeconds === 0) return;
+            $('swStartBtn').textContent = 'Running...'; }
+        function swStop() { if (!swInterval && swSeconds === 0) return;
             clearInterval(swInterval);
-            swInterval = null; const task = $('swTaskName').value.trim() || 'Untitled'; const today = tk(); if (!D.swHistory[today]) D.swHistory[today] = [];
+            swInterval = null; const task = $('swTaskName').value.trim() || 'Untitled'; const today = tk(); if (!D.swHistory) D.swHistory = {}; if (!D.swHistory[today]) D.swHistory[today] = [];
             D.swHistory[today].push({ task, seconds: swSeconds });
             swSeconds = 0;
             swUpdate();
             $('swStartBtn').textContent = 'Start';
             save();
-            renderSwHistory();
-            toast('Saved: ' + task); });
-        $('swResetBtn').addEventListener('click', () => { clearInterval(swInterval);
+            renderAll();
+            toast('Saved: ' + task); }
+        function swReset() { clearInterval(swInterval);
             swInterval = null;
             swSeconds = 0;
             swUpdate();
-            $('swStartBtn').textContent = 'Start'; });
+            $('swStartBtn').textContent = 'Start'; }
 
-        const manifestations = [
-            "Today, the universe aligns for your focus. Every task you complete is a step toward the woman you are becoming.",
-            "The energy you bring today will ripple through your entire week. Start strong, stay intentional.",
-            "You are not here to be average. You are here to be extraordinary. Today proves it.",
-            "Clarity comes from action. Move through your chain, and watch the fog lift.",
-            "Your future self is already thanking you for the discipline you show today.",
-            "Small hinges swing big doors. Every checked task is a hinge.",
-            "The world gives to those who know what they want. You know. Now take it.",
-            "Peace is not found. It is built. One completed chain at a time.",
-            "You have 24 hours. That's 1440 minutes. Spend them like the precious currency they are.",
-            "The difference between who you are and who you want to be is what you do today.",
-            "Your habits are your destiny. Today you are writing a beautiful chapter.",
-            "Be the woman who decided to go for it. No excuses. No delays. Just action.",
-            "You are exactly where you need to be to get to where you want to go. Trust the chain.",
-            "Every master was once a beginner who refused to quit. You are that beginner becoming a master."
-        ];
-        function renderManifest() {
-            const idx = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000) % manifestations.length;
-            $('manifestBox').textContent = '✦ ' + manifestations[idx];
-        }
+        function getTasksForDay(key) { if (key === tk()) return D.tasks; if (D.future[key]) return D.future[key]; return []; }
 
-        const letters = [
-            "Dear you,\n\nI'm writing from one year ahead. I know today feels heavy — 21 tasks, endless English, the same routine. But I need you to know: every single minute you invested is paying off. I speak fluently now. I landed the opportunity we dreamed about. I wake up without anxiety because you built the systems. You did that. The chain you're completing today? It forged me. Don't you dare stop.\n\nWith eternal gratitude,\nYour Future Self",
-            "Hey,\n\nIt's you from the future. I won't spoil everything, but I'll say this: the person you become in 6 months is unrecognizable. Her confidence, her clarity, her peace — all because of mornings like this one. When you wanted to skip yoga, you didn't. When English felt impossible, you pushed through. That compound effect? It's real. I'm living proof. Keep going. The transformation is already happening.\n\nLove,\nThe Best Version of You",
-            "To the woman reading this,\n\nYou don't know me yet, but I know you. I know the doubt that creeps in at 6am. I know the temptation to scroll instead of pray. But I also know what happens when you override it — day after day. You build a life that most people only fantasize about. You become the person others look at and wonder, 'How does she do it?' This is how. One chain. One day. One decision at a time.\n\nProudly,\nYou (from December)",
-            "Dear Present Me,\n\nStop looking for motivation. You don't need it. You have something far more powerful: a system. A chain. A promise to yourself. I'm writing this from a version of reality where you kept that promise. Spoiler: it's beautiful here. The view is worth every early morning, every 'no' to distraction, every 'yes' to discipline. I'm waiting for you. Come find me.\n\nYour Future Self"
-        ];
-        function showLetter() {
-            const idx = Math.floor(Math.random() * letters.length);
-            $('motiveQuote').textContent = letters[idx];
-            $('motiveSub').textContent = '';
-            $('motiveModal').classList.add('show');
-        }
-        $('motiveCloseBtn').addEventListener('click', () => $('motiveModal').classList.remove('show'));
-        $('motiveModal').addEventListener('click', (e) => { if (e.target === $('motiveModal')) $('motiveModal').classList.remove('show'); });
-
-        function getWeekDays() {
-            const days = [];
-            const today = new Date();
-            const dow = today.getDay(), monOff = dow === 0 ? -6 : 1 - dow;
-            const mon = new Date(today);
-            mon.setDate(today.getDate() + monOff);
-            for (let i = 0; i < 7; i++) { const d = new Date(mon);
-                d.setDate(mon.getDate() + i); const key = dk(d); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = key === tk() ? (D.today ? tasks.filter(t => D.today[t.id] === true).length : 0) : (D.done[key] === true ? total : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-                days.push({ key, label: ['M','T','W','T','F','S','S'][i], date: d.getDate(), isToday: key === tk(), pct, total, done: D.done[key] === true }); }
-            return days;
-        }
-        function renderWeekRings() {
-            const days = getWeekDays();
-            const wrc = 2 * Math.PI * 13;
-            $('weekRings').innerHTML = days.map(d => '<div class="week-ring"><svg viewBox="0 0 34 34"><circle class="wr-bg" cx="17" cy="17" r="13"/><circle class="wr-fill' + (d.done && d.total > 0 ? ' done' : '') + '" cx="17" cy="17" r="13" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (d.pct / 100) * wrc) + '"/></svg><span>' + d.label + ' ' + d.date + '</span></div>').join('');
-        }
-        function renderChainRing() {
-            const vk = viewKey();
-            const tasks = getTasksForDay(vk);
-            const comp = vk === tk() ? D.today : {};
-            const doneCount = tasks.filter(t => comp[t.id] === true).length;
-            const total = tasks.length;
-            const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-            $('chainRingFill').style.strokeDashoffset = RING - (pct / 100) * RING;
-            $('chainRingFill').classList.toggle('complete', pct === 100 && total > 0);
-            $('chainRingText').textContent = total > 0 ? pct + '%' : '—';
-        }
-        function renderGoals() {
-            const doneCount = D.goals.filter(g => g.done).length;
-            const total = D.goals.length;
-            $('goalsSummary').innerHTML = '<span>' + doneCount + '/' + total + ' completed</span><span>' + (total > 0 ? Math.round((doneCount / total) * 100) : 0) + '%</span>';
-            $('goalsExpanded').innerHTML = D.goals.map(g => '<div class="goal-item"><div class="goal-check' + (g.done ? ' done' : '') + '" data-id="' + g.id + '">' + (g.done ? '✓' : '') + '</div><span class="goal-name">' + esc(g.name) + '</span><span class="goal-del" data-id="' + g.id + '">×</span></div>').join('');
-            $('goalsExpanded').querySelectorAll('.goal-check').forEach(el => { el.addEventListener('click', () => { const g = D.goals.find(g => g.id === parseInt(el.dataset.id)); if (g) g.done = !g.done;
-                save();
-                renderGoals(); }); });
-            $('goalsExpanded').querySelectorAll('.goal-del').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation();
-                D.goals = D.goals.filter(g => g.id !== parseInt(el.dataset.id));
-                save();
-                renderGoals(); }); });
-            $('goalsSummary').onclick = () => { $('goalsExpanded').classList.toggle('hidden'); };
-        }
-        function exportData() {
-            const blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+        function recordGame(type) { const reason = $('gameInput').value.trim(); if (!D.gameLog) D.gameLog = {}; const today = tk(); if (!D.gameLog[today]) D.gameLog[today] = [];
+            D.gameLog[today].push({ type, reason: reason || (type === 'win' ? 'Did it' : 'Gave in'), ts: Date.now() });
+            if (type === 'win') D.wins = (D.wins || 0) + 1;
+            else D.impulses = (D.impulses || 0) + 1;
+            $('gameInput').value = '';
+            toast(type === 'win' ? 'Win!' : 'Impulse');
+            save();
+            renderAll(); }
+        function addTask() { const name = $('newTaskName').value.trim(); if (!name) return; const vk = viewKey(); const t = { id: D.nextId++, name, start: $('newTaskStart').value.trim(), end: $('newTaskEnd').value.trim() }; if (vk === tk()) D.tasks.push(t); else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
+            D.future[vk].push(t); }
+            $('newTaskName').value = '';
+            $('newTaskStart').value = '';
+            $('newTaskEnd').value = '';
+            save();
+            renderAll(); }
+        function prevDay() { viewOffset--;
+            renderAll(); }
+        function nextDay() { viewOffset++;
+            renderAll(); }
+        function resetDay() { if (confirm('Reset this day?')) { const vk = viewKey(); if (vk === tk()) { D.today = {}; } D.done[vk] = false;
+            save();
+            renderAll();
+            toast('Day reset'); } }
+        function dup(key) { if (!D.future[key]) D.future[key] = JSON.parse(JSON.stringify(D.tasks)); }
+        function dupPrev() { const d = new Date();
+            d.setDate(d.getDate() - 1);
+            dup(dk(d));
+            toast('Done');
+            renderAll(); }
+        function dupNext() { const d = new Date();
+            d.setDate(d.getDate() + 1);
+            dup(dk(d));
+            toast('Done');
+            renderAll(); }
+        function dupWeek() { for (let i = 1; i <= 7; i++) { const d = new Date();
+                d.setDate(d.getDate() + i);
+                dup(dk(d)); } toast('7 days');
+            renderAll(); }
+        function addGoal() { const name = $('newGoalInput').value.trim(); if (!name) return;
+            D.goals.push({ id: D.nextGoalId++, name, done: false });
+            $('newGoalInput').value = '';
+            save();
+            renderAll(); }
+        function togglePanel() { $('panelOverlay').classList.toggle('show');
+            $('slidePanel').classList.toggle('show'); }
+        function closePanel() { $('panelOverlay').classList.remove('show');
+            $('slidePanel').classList.remove('show'); }
+        function goToday() { viewOffset = 0;
+            closePanel();
+            renderAll(); }
+        function toggleGoals() { $('goalsExpanded').classList.toggle('hidden'); }
+        function openCalendar() { closePanel();
+            $('calModal').classList.add('show');
+            renderCalModal(); }
+        function closeCalendar() { $('calModal').classList.remove('show'); }
+        function closeLetter() { $('motiveModal').classList.remove('show'); }
+        function resetAll() { closePanel(); if (confirm('Reset everything?')) { D = { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, today: {}, nextId: 2, future: {}, swHistory: {}, goals: D.goals, nextGoalId: D.nextGoalId, gameLog: {} };
+            save();
+            renderAll();
+            toast('All reset'); } }
+        function exportData() { closePanel(); const blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a');
             a.href = url;
-            a.download = 'better-me-backup-' + tk() + '.json';
+            a.download = 'backup-' + tk() + '.json';
             a.click();
             URL.revokeObjectURL(url);
-            toast('Exported!');
-        }
-        function importData(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => { try { const imported = JSON.parse(e.target.result); if (imported && imported.tasks && imported.done) { D = imported;
+            toast('Exported!'); }
+        function importData(file) { if (!file) return;
+            closePanel(); const reader = new FileReader();
+            reader.onload = (e) => { try { const imported = JSON.parse(e.target.result); if (imported && imported.tasks) { D = imported;
                     save();
                     renderAll();
-                    toast('Imported!'); } else { toast('Invalid file'); } } catch (err) { toast('Error reading file'); } };
-            reader.readAsText(file);
-        }
+                    toast('Imported!'); } else { toast('Invalid file'); } } catch (err) { toast('Error'); } };
+            reader.readAsText(file); }
+        function toggleGameLog() { $('gameLogList').classList.toggle('show'); const log = (D.gameLog && D.gameLog[tk()]) ? D.gameLog[tk()] : [];
+            $('gameLogToggle').textContent = $('gameLogList').classList.contains('show') ? 'Today\'s moments ▴' : 'Today\'s moments (' + log.length + ') ▾'; }
 
-        function getTasksForDay(key) {
-            if (key === tk()) return D.tasks;
-            if (D.future[key]) return D.future[key];
-            return [];
+        let calViewMonth = new Date().getMonth(), calViewYear = new Date().getFullYear();
+        function calPrev() { calViewMonth--;
+            if (calViewMonth < 0) { calViewMonth = 11;
+                calViewYear--; } renderCalModal(); }
+        function calNext() { calViewMonth++;
+            if (calViewMonth > 11) { calViewMonth = 0;
+                calViewYear++; } renderCalModal(); }
+        function renderCalModal() {
+            $('calMonthTitle').textContent = new Date(calViewYear, calViewMonth).toLocaleString('en', { month: 'long', year: 'numeric' });
+            const firstDay = new Date(calViewYear, calViewMonth, 1).getDay(), daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+            const wrc = 2 * Math.PI * 8;
+            let html = '';
+            ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => html += '<div style="font-size:9px;color:#C5C5C5;text-align:center;">' + d + '</div>');
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startOffset; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) { const key = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = D.done[key] === true ? total : (key === tk() ? tasks.filter(t => D.today[t.id] === true).length : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0; let cls = 'cal-cell-wrap'; if (key === tk()) cls += ' today';
+                html += '<div class="' + cls + '" data-key="' + key + '" onclick="calGoTo(\'' + key + '\')"><div class="cal-num">' + d + '</div><svg class="cal-mini-ring" viewBox="0 0 22 22"><circle class="cmr-bg" cx="11" cy="11" r="8"/><circle class="cmr-fill' + (D.done[key] === true ? ' done' : '') + '" cx="11" cy="11" r="8" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (pct / 100) * wrc) + '"/></svg></div>'; }
+            $('calGrid').innerHTML = html;
         }
+        function calGoTo(key) { const d = new Date(key);
+            viewOffset = Math.round((d - new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())) / 86400000);
+            closeCalendar();
+            renderAll(); }
 
-        function renderGameLog() {
-            const today = tk();
-            const log = (D.gameLog && D.gameLog[today]) ? D.gameLog[today] : [];
-            if (log.length === 0) {
-                $('gameLogToggle').textContent = 'No moments today';
-                $('gameLogList').innerHTML = '';
-                return;
-            }
-            $('gameLogToggle').textContent = 'Today\'s moments (' + log.length + ') ▾';
-            $('gameLogList').innerHTML = log.slice().reverse().map(l => {
-                const typeLabel = l.type === 'win' ? 'Win' : 'Impulse';
-                const typeClass = l.type === 'win' ? 'win' : 'lose';
-                return '<div class="game-log-item"><span class="gl-type ' + typeClass + '">' + typeLabel + '</span><span class="gl-reason">' + esc(l.reason) + '</span></div>';
-            }).join('');
-            if (!$('gameLogList').classList.contains('show')) $('gameLogToggle').textContent = 'Today\'s moments (' + log.length + ') ▾';
-        }
-        $('gameLogToggle').addEventListener('click', () => {
-            $('gameLogList').classList.toggle('show');
-            $('gameLogToggle').textContent = $('gameLogList').classList.contains('show') ?
-                'Today\'s moments ▴' : 'Today\'s moments ▾';
-        });
+        const triggers = [{ q: 'The person you want to become is watching.', s: 'Don\'t let her down.' }, { q: 'No one is coming to save you.', s: 'This is YOUR moment.' }, { q: 'Pressure creates diamonds.', s: 'You\'re being forged right now.' }, { q: 'While others scroll, you build.', s: 'Discipline is freedom.' }, { q: 'The tide doesn\'t ask permission.', s: 'Neither should you.' }, { q: 'The summit is lonely for a reason.', s: 'Few are willing to climb.' }, { q: 'Today is a battle.', s: 'Pick up your sword.' }, { q: 'Your focus is the only light.', s: 'Guard it fiercely.' }, { q: 'Every completed task is a key.', s: 'Unlock your freedom.' }, { q: 'Excellence is a choice.', s: 'Made in moments like this.' }, { q: 'The lion doesn\'t beg the lamb.', s: 'Lead yourself.' }, { q: 'One focused day changes everything.', s: 'Make today that day.' }, { q: 'Peace comes from doing EVERYTHING.', s: 'Finish the chain. Then rest.' }, { q: 'The sun rises on a fresh battlefield.', s: '24 hours. Make them count.' }];
+        const letters = ["Dear you,\n\nI'm writing from one year ahead. Every single minute you invested is paying off. I speak fluently now. I landed the opportunity we dreamed about. I wake up without anxiety because you built the systems. You did that. The chain you're completing today? It forged me. Don't you dare stop.\n\nYour Future Self", "Hey,\n\nIt's you from the future. The person you become in 6 months is unrecognizable. Her confidence, her clarity, her peace — all because of mornings like this one. That compound effect? It's real. I'm living proof. Keep going.\n\nThe Best Version of You", "To the woman reading this,\n\nI know the doubt that creeps in at 6am. But I also know what happens when you override it — day after day. You build a life that most people only fantasize about. This is how. One chain. One day. One decision at a time.\n\nYou (from December)", "Dear Present Me,\n\nStop looking for motivation. You don't need it. You have something far more powerful: a system. A chain. A promise to yourself. Spoiler: it's beautiful here. I'm waiting for you. Come find me.\n\nYour Future Self"];
+        function showLetter() { const idx = Math.floor(Math.random() * letters.length);
+            $('motiveQuote').textContent = letters[idx];
+            $('motiveSub').textContent = '';
+            $('motiveModal').classList.add('show'); }
 
         function renderAll() {
             $('winScore').textContent = D.wins || 0;
@@ -1258,67 +1161,50 @@
             for (let i = -3; i <= 10; i++) { const d = new Date(now);
                 d.setDate(now.getDate() + i); const key = dk(d);
                 cal.push({ key, num: d.getDate(), dow: ['S','M','T','W','T','F','S'][d.getDay()], isToday: i === 0, isSel: i === viewOffset, status: D.done[key] }); }
-            $('miniCal').innerHTML = '';
-            cal.forEach(c => {
-                const el = document.createElement('div');
-                let cls = 'mini-day';
-                if (c.isToday) cls += ' today';
-                if (c.isSel) cls += ' selected';
-                if (c.status === true) cls += ' done';
-                if (c.status === false) cls += ' missed';
-                el.className = cls;
-                el.innerHTML = '<span class="dow">' + c.dow + '</span><span class="num">' + c.num + '</span>';
-                el.addEventListener('click', () => {
-                    const todayD = new Date();
-                    const d = new Date(c.key);
-                    viewOffset = Math.round((d - new Date(todayD.getFullYear(), todayD.getMonth(), todayD.getDate())) / 86400000);
-                    renderAll();
-                });
-                $('miniCal').appendChild(el);
-            });
+            $('miniCal').innerHTML = cal.map(c => '<div class="mini-day' + (c.isToday ? ' today' : '') + (c.isSel ? ' selected' : '') + (c.status === true ? ' done' : '') + (c.status === false ? ' missed' : '') + '" onclick="goToDay(\'' + c.key + '\')"><span class="dow">' + c.dow + '</span><span class="num">' + c.num + '</span></div>').join('');
             const vk = viewKey();
             const tasks = getTasksForDay(vk);
             const comp = vk === today ? D.today : {};
             const allDone = tasks.length > 0 && tasks.every(t => comp[t.id] === true);
-            const vd = new Date(vk);
-            $('chainDate').textContent = vd.toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short' });
-            if (vk === today) $('chainTodayBadge').textContent = "Today's Chain";
-            else if (vk === dk(new Date(Date.now() - 86400000))) $('chainTodayBadge').textContent = "Yesterday";
-            else if (vk === dk(new Date(Date.now() + 86400000))) $('chainTodayBadge').textContent = "Tomorrow";
-            else $('chainTodayBadge').textContent = '';
+            $('chainDate').textContent = new Date(vk).toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short' });
+            $('chainTodayBadge').textContent = vk === today ? "Today's Chain" : vk === dk(new Date(Date.now() - 86400000)) ? "Yesterday" : vk === dk(new Date(Date.now() + 86400000)) ? "Tomorrow" : '';
             $('chainStatus').textContent = tasks.length === 0 ? 'no tasks' : allDone ? 'complete' : 'incomplete';
             $('chainStatus').className = 'chain-status ' + (allDone && tasks.length > 0 ? 'yes' : 'no');
-            $('taskList').innerHTML = tasks.map((t, idx) => { const isDone = comp[t.id] === true; return '<div class="task' + (isDone ? ' done' : '') + '"><div class="task-dot' + (isDone ? ' done' : '') + '" data-id="' + t.id + '">' + (isDone ? '✓' : '') + '</div><div class="task-info"><input class="task-name-input" value="' + esc(t.name) + '" data-id="' + t.id + '" data-field="name"><div class="task-time-row"><input class="task-time-input" value="' + (t.start || '') + '" data-id="' + t.id + '" data-field="start" placeholder="start"><span style="color:#C1C0BD;">–</span><input class="task-time-input" value="' + (t.end || '') + '" data-id="' + t.id + '" data-field="end" placeholder="end"></div></div><div class="task-grip" data-id="' + t.id + '">⋮⋮</div><div class="task-del" data-id="' + t.id + '">×</div></div>'; }).join('');
-            $('taskList').querySelectorAll('.task-dot').forEach(el => { el.addEventListener('click', () => toggle(parseInt(el.dataset.id))); });
-            $('taskList').querySelectorAll('.task-del').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation();
-                delTask(parseInt(el.dataset.id)); }); });
-            $('taskList').querySelectorAll('.task-grip').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation();
-                moveUp(parseInt(el.dataset.id)); }); });
-            $('taskList').querySelectorAll('.task-name-input, .task-time-input').forEach(el => { el.addEventListener('click', (e) => e.stopPropagation());
-                el.addEventListener('input', () => updateTaskField(parseInt(el.dataset.id), el.dataset.field, el.value)); });
+            $('taskList').innerHTML = tasks.map(t => { const isDone = comp[t.id] === true; return '<div class="task' + (isDone ? ' done' : '') + '"><div class="task-dot' + (isDone ? ' done' : '') + '" onclick="toggleTask(' + t.id + ')">' + (isDone ? '✓' : '') + '</div><div class="task-info"><input class="task-name-input" value="' + esc(t.name) + '" data-id="' + t.id + '" data-field="name" oninput="updateField(' + t.id + ',this)"><div class="task-time-row"><input class="task-time-input" value="' + (t.start || '') + '" data-id="' + t.id + '" data-field="start" oninput="updateField(' + t.id + ',this)"><span style="color:#C1C0BD;">–</span><input class="task-time-input" value="' + (t.end || '') + '" data-id="' + t.id + '" data-field="end" oninput="updateField(' + t.id + ',this)"></div></div><div class="task-grip" onclick="moveUp(' + t.id + ')">⋮⋮</div><div class="task-del" onclick="delTask(' + t.id + ')">×</div></div>'; }).join('');
+            const chainRingFill = $('chainRingFill');
+            const doneCount = tasks.filter(t => comp[t.id] === true).length;
+            const total = tasks.length;
+            const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+            chainRingFill.style.strokeDashoffset = RING - (pct / 100) * RING;
+            chainRingFill.classList.toggle('complete', pct === 100 && total > 0);
+            $('chainRingText').textContent = total > 0 ? pct + '%' : '—';
             $('streakDays').textContent = s;
             $('totalDone').textContent = Object.values(D.done).filter(v => v === true).length;
             $('totalMissed').textContent = Object.values(D.done).filter(v => v === false).length;
-            renderChainRing();
-            renderWeekRings();
-            renderGoals();
-            renderManifest();
-            renderGameLog();
-            loadSw();
+            const wDays = getWeekDays();
+            const wrc = 2 * Math.PI * 13;
+            $('weekRings').innerHTML = wDays.map(d => '<div class="week-ring"><svg viewBox="0 0 34 34"><circle class="wr-bg" cx="17" cy="17" r="13"/><circle class="wr-fill' + (d.done && d.total > 0 ? ' done' : '') + '" cx="17" cy="17" r="13" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (d.pct / 100) * wrc) + '"/></svg><span>' + d.label + ' ' + d.date + '</span></div>').join('');
+            const doneGoals = D.goals.filter(g => g.done).length;
+            const totalGoals = D.goals.length;
+            $('goalsSummary').innerHTML = '<span>' + doneGoals + '/' + totalGoals + ' completed</span><span>' + (totalGoals > 0 ? Math.round((doneGoals / totalGoals) * 100) : 0) + '%</span>';
+            $('goalsExpanded').innerHTML = D.goals.map(g => '<div class="goal-item"><div class="goal-check' + (g.done ? ' done' : '') + '" onclick="toggleGoal(' + g.id + ')">' + (g.done ? '✓' : '') + '</div><span class="goal-name">' + esc(g.name) + '</span><span class="goal-del" onclick="delGoal(' + g.id + ')">×</span></div>').join('');
+            const log = (D.gameLog && D.gameLog[tk()]) ? D.gameLog[tk()] : [];
+            $('gameLogToggle').textContent = log.length === 0 ? 'No moments today' : 'Today\'s moments (' + log.length + ') ' + ($('gameLogList').classList.contains('show') ? '▴' : '▾');
+            $('gameLogList').innerHTML = log.slice().reverse().map(l => '<div class="game-log-item"><span class="gl-type ' + l.type + '">' + (l.type === 'win' ? 'Win' : 'Impulse') + '</span><span class="gl-reason">' + esc(l.reason) + '</span></div>').join('');
+            const swHistory = (D.swHistory && D.swHistory[tk()]) ? D.swHistory[tk()] : [];
+            $('swHistory').innerHTML = swHistory.length === 0 ? '<div style="font-size:10px;color:#C5C5C5;text-align:center;padding:10px 0;">No records today</div>' : swHistory.slice().reverse().map((h, i) => '<div class="sw-history-item"><span class="sw-h-task">' + esc(h.task) + '</span><span class="sw-h-time">' + swFmt(h.seconds) + '</span><span class="sw-h-del" onclick="delSw(' + (swHistory.length - 1 - i) + ')">×</span></div>').join('');
+            const manifestIdx = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000) % 14;
+            const mfsts = ["Today, the universe aligns for your focus.", "The energy you bring today will ripple through your entire week.", "You are not here to be average. You are here to be extraordinary.", "Clarity comes from action. Move through your chain.", "Your future self is already thanking you.", "Small hinges swing big doors.", "The world gives to those who know what they want.", "Peace is not found. It is built.", "You have 24 hours. That's 1440 minutes.", "The difference between who you are and who you want to be is what you do today.", "Your habits are your destiny.", "Be the woman who decided to go for it.", "You are exactly where you need to be.", "Every master was once a beginner who refused to quit."];
+            $('manifestBox').textContent = '✦ ' + mfsts[manifestIdx];
             save();
         }
-        function esc(s) { const d = document.createElement('div');
-            d.textContent = s; return d.innerHTML; }
-        function updateTaskField(id, field, value) {
-            const vk = viewKey();
-            if (vk === tk()) { const t = D.tasks.find(t => t.id === id); if (t) t[field] = value; } else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks)); const t = D.future[vk].find(t => t.id === id); if (t) t[field] = value; }
-            save();
-        }
-        function toggle(id) { if (viewKey() !== tk()) return;
-            D.today[id] = !D.today[id]; const tasks = D.tasks;
-            const allDone = tasks.length > 0 && tasks.every(t => D.today[t.id] === true);
-            D.done[tk()] = allDone ? true : false;
-            if (allDone) setTimeout(showLetter, 500);
+
+        function goToDay(key) { const todayD = new Date(); const d = new Date(key);
+            viewOffset = Math.round((d - new Date(todayD.getFullYear(), todayD.getMonth(), todayD.getDate())) / 86400000);
+            renderAll(); }
+        function toggleTask(id) { if (viewKey() !== tk()) return;
+            D.today[id] = !D.today[id]; const tasks = D.tasks; const allDone = tasks.length > 0 && tasks.every(t => D.today[t.id] === true);
+            D.done[tk()] = allDone ? true : false; if (allDone) setTimeout(showLetter, 500);
             save();
             renderAll(); }
         function delTask(id) { if (!confirm('Delete?')) return; const vk = viewKey(); if (vk === tk()) { D.tasks = D.tasks.filter(t => t.id !== id);
@@ -1332,109 +1218,38 @@
             else D.future[vk] = tasks;
             save();
             renderAll(); }
-        function addTask() { const name = $('newTaskName').value.trim(); if (!name) return; const vk = viewKey(); const t = { id: D.nextId++, name, start: $('newTaskStart').value.trim(), end: $('newTaskEnd').value.trim() }; if (vk === tk()) D.tasks.push(t); else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
-            D.future[vk].push(t); }
-            $('newTaskName').value = '';
-            $('newTaskStart').value = '';
-            $('newTaskEnd').value = '';
+        function updateField(id, el) { const vk = viewKey(); const field = el.dataset.field; const value = el.value; if (vk === tk()) { const t = D.tasks.find(t => t.id === id); if (t) t[field] = value; } else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks)); const t = D.future[vk].find(t => t.id === id); if (t) t[field] = value; } save(); }
+        function toggleGoal(id) { const g = D.goals.find(g => g.id === id); if (g) g.done = !g.done;
             save();
             renderAll(); }
-        function recordGame(type) { const reason = $('gameInput').value.trim();
-            if (!D.gameLog) D.gameLog = {};
-            const today = tk();
-            if (!D.gameLog[today]) D.gameLog[today] = [];
-            D.gameLog[today].push({ type, reason: reason || (type === 'win' ? 'Did it' : 'Gave in'), ts: Date.now() });
-            if (type === 'win') D.wins = (D.wins || 0) + 1;
-            else D.impulses = (D.impulses || 0) + 1;
-            $('gameInput').value = '';
-            toast(type === 'win' ? 'Win!' : 'Impulse');
+        function delGoal(id) { D.goals = D.goals.filter(g => g.id !== id);
             save();
             renderAll(); }
-        function dup(key) { if (!D.future[key]) D.future[key] = JSON.parse(JSON.stringify(D.tasks)); }
+        function delSw(idx) { const today = tk(); if (D.swHistory && D.swHistory[today]) D.swHistory[today].splice(idx, 1);
+            save();
+            renderAll(); }
+        function getWeekDays() {
+            const days = [];
+            const today = new Date();
+            const dow = today.getDay(), monOff = dow === 0 ? -6 : 1 - dow;
+            const mon = new Date(today);
+            mon.setDate(today.getDate() + monOff);
+            for (let i = 0; i < 7; i++) { const d = new Date(mon);
+                d.setDate(mon.getDate() + i); const key = dk(d); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = key === tk() ? (D.today ? tasks.filter(t => D.today[t.id] === true).length : 0) : (D.done[key] === true ? total : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+                days.push({ key, label: ['M','T','W','T','F','S','S'][i], date: d.getDate(), isToday: key === tk(), pct, total, done: D.done[key] === true }); }
+            return days;
+        }
+        function esc(s) { const d = document.createElement('div');
+            d.textContent = s; return d.innerHTML; }
+        function toast(msg) { $('toast').textContent = msg;
+            $('toast').classList.add('show');
+            setTimeout(() => $('toast').classList.remove('show'), 1800); }
 
         const last = localStorage.getItem('bm_last_date');
         if (last !== tk()) { D.today = {}; if (D.future[tk()]) { D.tasks = JSON.parse(JSON.stringify(D.future[tk()]));
                 delete D.future[tk()]; } localStorage.setItem('bm_last_date', tk());
             setTimeout(showLetter, 800); }
 
-        $('gameWinBtn').addEventListener('click', () => recordGame('win'));
-        $('gameLoseBtn').addEventListener('click', () => recordGame('lose'));
-        $('addTaskBtn').addEventListener('click', addTask);
-        $('newTaskName').addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
-        $('chainPrevBtn').addEventListener('click', () => { viewOffset--;
-            renderAll(); });
-        $('chainNextBtn').addEventListener('click', () => { viewOffset++;
-            renderAll(); });
-        $('resetDayBtn').addEventListener('click', () => { if (confirm('Reset this day?')) { const vk = viewKey(); if (vk === tk()) { D.today = {}; } D.done[vk] = false;
-            save();
-            renderAll();
-            toast('Day reset'); } });
-        $('dupTomorrowBtn').addEventListener('click', () => { const d = new Date();
-            d.setDate(d.getDate() + 1);
-            dup(dk(d));
-            toast('Duplicated to tomorrow');
-            renderAll(); });
-        $('dupWeekBtn').addEventListener('click', () => { for (let i = 1; i <= 7; i++) { const d = new Date();
-                d.setDate(d.getDate() + i);
-                dup(dk(d)); } toast('7 days duplicated');
-            renderAll(); });
-        $('addGoalBtn').addEventListener('click', () => { const name = $('newGoalInput').value.trim(); if (!name) return;
-            D.goals.push({ id: D.nextGoalId++, name, done: false });
-            $('newGoalInput').value = '';
-            save();
-            renderGoals(); });
-        $('newGoalInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('addGoalBtn').click(); });
-        $('exportBtn').addEventListener('click', () => { $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show');
-            exportData(); });
-        $('importBtn').addEventListener('click', () => { $('importFile').click(); });
-        $('importFile').addEventListener('change', (e) => { if (e.target.files[0]) { importData(e.target.files[0]);
-                $('panelOverlay').classList.remove('show');
-                $('slidePanel').classList.remove('show'); } });
-        $('menuBtn').addEventListener('click', () => { $('panelOverlay').classList.add('show');
-            $('slidePanel').classList.add('show'); });
-        $('panelCloseBtn').addEventListener('click', () => { $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show'); });
-        $('panelOverlay').addEventListener('click', () => { $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show'); });
-        $('panelTodayBtn').addEventListener('click', () => { viewOffset = 0;
-            $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show');
-            renderAll(); });
-        $('panelCalBtn').addEventListener('click', () => { $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show');
-            $('calModal').classList.add('show');
-            renderCalModal(); });
-        $('panelResetBtn').addEventListener('click', () => { $('panelOverlay').classList.remove('show');
-            $('slidePanel').classList.remove('show'); if (confirm('Reset everything?')) { D = { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, today: {}, nextId: 2, future: {}, swHistory: {}, goals: D.goals, nextGoalId: D.nextGoalId, gameLog: {} };
-                save();
-                renderAll();
-                toast('All reset'); } });
-        let calViewMonth = new Date().getMonth(), calViewYear = new Date().getFullYear();
-        function renderCalModal() {
-            $('calMonthTitle').textContent = new Date(calViewYear, calViewMonth).toLocaleString('en', { month: 'long', year: 'numeric' });
-            const firstDay = new Date(calViewYear, calViewMonth, 1).getDay(), daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
-            const wrc = 2 * Math.PI * 8;
-            let html = '';
-            ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => html += '<div style="font-size:9px;color:#C5C5C5;text-align:center;">' + d + '</div>');
-            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
-            for (let i = 0; i < startOffset; i++) html += '<div></div>';
-            for (let d = 1; d <= daysInMonth; d++) { const key = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = D.done[key] === true ? total : (key === tk() ? tasks.filter(t => D.today[t.id] === true).length : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0; let cls = 'cal-cell-wrap'; if (key === tk()) cls += ' today';
-                html += '<div class="' + cls + '" data-key="' + key + '"><div class="cal-num">' + d + '</div><svg class="cal-mini-ring" viewBox="0 0 22 22"><circle class="cmr-bg" cx="11" cy="11" r="8"/><circle class="cmr-fill' + (D.done[key] === true ? ' done' : '') + '" cx="11" cy="11" r="8" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (pct / 100) * wrc) + '"/></svg></div>'; }
-            $('calGrid').innerHTML = html;
-            $('calGrid').querySelectorAll('.cal-cell-wrap[data-key]').forEach(el => { el.addEventListener('click', () => { const d = new Date(el.dataset.key);
-                viewOffset = Math.round((d - new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())) / 86400000);
-                $('calModal').classList.remove('show');
-                renderAll(); }); });
-        }
-        $('calCloseBtn').addEventListener('click', () => $('calModal').classList.remove('show'));
-        $('calModal').addEventListener('click', (e) => { if (e.target === $('calModal')) $('calModal').classList.remove('show'); });
-        $('calPrevMonth').addEventListener('click', () => { calViewMonth--;
-            if (calViewMonth < 0) { calViewMonth = 11;
-                calViewYear--; } renderCalModal(); });
-        $('calNextMonth').addEventListener('click', () => { calViewMonth++;
-            if (calViewMonth > 11) { calViewMonth = 0;
-                calViewYear++; } renderCalModal(); });
         renderAll();
     </script>
 </body>
