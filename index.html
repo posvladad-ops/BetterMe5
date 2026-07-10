@@ -965,7 +965,7 @@
             <div class="bar-wrap"><div class="bar-label"><span id="ratioText">0:0</span><span>Goal 70%</span></div><div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div></div>
             <div class="input-row"><input type="text" id="gameInput" placeholder="What happened?" maxlength="60"></div>
             <div class="btn-row"><button class="btn btn-win" onclick="recordGame('win')">I Won</button><button class="btn btn-lose" onclick="recordGame('lose')">Impulse</button></div>
-            <div class="game-log-toggle" onclick="toggleGameLog()" id="gameLogToggle">Today's moments ▾</div>
+            <div class="game-log-toggle" onclick="toggleGameLog()" id="gameLogToggle">No moments today</div>
             <div class="game-log-list" id="gameLogList"></div>
         </div>
         <div class="mini-cal" id="miniCal"></div>
@@ -992,11 +992,24 @@
     <div class="modal" id="motiveModal" onclick="if(event.target===this)this.classList.remove('show')"><div class="modal-card"><div class="modal-q" id="motiveQuote"></div><div class="modal-sub" id="motiveSub"></div><button class="modal-btn" onclick="closeLetter()">Thank you</button></div></div>
 
     <script>
-        const STORAGE = 'bm_v8';
+        const STORAGE = 'bm_final_fixed';
         function load() {
             const r = localStorage.getItem(STORAGE);
             if (r) { try { return JSON.parse(r); } catch (e) {} }
-            return { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, today: {}, nextId: 2, future: {}, swHistory: {}, goals: [{ id: 1, name: 'Read 12 books', done: false }], nextGoalId: 2, gameLog: {} };
+            // Try to find old data
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const r2 = localStorage.getItem(key);
+                if (!r2) continue;
+                try {
+                    const d = JSON.parse(r2);
+                    if (d && d.tasks && Array.isArray(d.tasks) && d.done) {
+                        localStorage.setItem(STORAGE, r2);
+                        return d;
+                    }
+                } catch (e) {}
+            }
+            return { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, nextId: 2, future: {}, swHistory: {}, goals: [{ id: 1, name: 'Read 12 books', done: false }], nextGoalId: 2, gameLog: {} };
         }
         function save() { localStorage.setItem(STORAGE, JSON.stringify(D)); }
         let D = load();
@@ -1008,10 +1021,10 @@
             d.setDate(d.getDate() + viewOffset); return dk(d); }
         const RING = 2 * Math.PI * 18;
 
+        // Stopwatch
         let swInterval = null, swSeconds = 0;
         function swFmt(s) { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60; return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0'); }
         function swUpdate() { $('swDisplay').textContent = swFmt(swSeconds); }
-
         function swStart() { if (swInterval) return;
             swInterval = setInterval(() => { swSeconds++;
                 swUpdate(); }, 1000);
@@ -1032,7 +1045,46 @@
             swUpdate();
             $('swStartBtn').textContent = 'Start'; }
 
-        function getTasksForDay(key) { if (key === tk()) return D.tasks; if (D.future[key]) return D.future[key]; return []; }
+        function getTasksForDay(key) {
+            if (key === tk()) return D.tasks;
+            if (D.future && D.future[key]) return D.future[key];
+            // For past days, return tasks from future if they exist, or default tasks
+            if (D.future && D.future[key]) return D.future[key];
+            return [];
+        }
+
+        function getCompletedForDay(key) {
+            if (key === tk()) return D.today || {};
+            // For past/future days, store completion in future[key]._completed or separate
+            if (D.future && D.future[key] && D.future[key]._completed) return D.future[key]._completed;
+            if (D.done && D.done[key] === true) {
+                // Day was marked complete — all tasks done
+                const tasks = getTasksForDay(key);
+                const obj = {};
+                tasks.forEach(t => obj[t.id] = true);
+                return obj;
+            }
+            return {};
+        }
+
+        function setCompletedForDay(key, id, value) {
+            if (key === tk()) {
+                if (!D.today) D.today = {};
+                D.today[id] = value;
+            } else {
+                if (!D.future) D.future = {};
+                if (!D.future[key]) D.future[key] = [];
+                if (!D.future[key]._completed) D.future[key]._completed = {};
+                D.future[key]._completed[id] = value;
+            }
+            // Update done status
+            const tasks = getTasksForDay(key);
+            const comp = getCompletedForDay(key);
+            const allDone = tasks.length > 0 && tasks.every(t => comp[t.id] === true);
+            if (!D.done) D.done = {};
+            D.done[key] = allDone ? true : (Object.values(comp).some(v => v === true) ? false : undefined);
+            save();
+        }
 
         function recordGame(type) { const reason = $('gameInput').value.trim(); if (!D.gameLog) D.gameLog = {}; const today = tk(); if (!D.gameLog[today]) D.gameLog[today] = [];
             D.gameLog[today].push({ type, reason: reason || (type === 'win' ? 'Did it' : 'Gave in'), ts: Date.now() });
@@ -1042,7 +1094,7 @@
             toast(type === 'win' ? 'Win!' : 'Impulse');
             save();
             renderAll(); }
-        function addTask() { const name = $('newTaskName').value.trim(); if (!name) return; const vk = viewKey(); const t = { id: D.nextId++, name, start: $('newTaskStart').value.trim(), end: $('newTaskEnd').value.trim() }; if (vk === tk()) D.tasks.push(t); else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
+        function addTask() { const name = $('newTaskName').value.trim(); if (!name) return; const vk = viewKey(); const t = { id: D.nextId++, name, start: $('newTaskStart').value.trim(), end: $('newTaskEnd').value.trim() }; if (vk === tk()) D.tasks.push(t); else { if (!D.future) D.future = {}; if (!D.future[vk]) D.future[vk] = [];
             D.future[vk].push(t); }
             $('newTaskName').value = '';
             $('newTaskStart').value = '';
@@ -1053,11 +1105,11 @@
             renderAll(); }
         function nextDay() { viewOffset++;
             renderAll(); }
-        function resetDay() { if (confirm('Reset this day?')) { const vk = viewKey(); if (vk === tk()) { D.today = {}; } D.done[vk] = false;
+        function resetDay() { if (confirm('Reset this day?')) { const vk = viewKey(); if (vk === tk()) { D.today = {}; } else { if (D.future && D.future[vk]) D.future[vk]._completed = {}; } if (D.done) D.done[vk] = false;
             save();
             renderAll();
             toast('Day reset'); } }
-        function dup(key) { if (!D.future[key]) D.future[key] = JSON.parse(JSON.stringify(D.tasks)); }
+        function dup(key) { if (!D.future) D.future = {}; if (!D.future[key]) D.future[key] = JSON.parse(JSON.stringify(D.tasks)); }
         function dupPrev() { const d = new Date();
             d.setDate(d.getDate() - 1);
             dup(dk(d));
@@ -1090,7 +1142,7 @@
             renderCalModal(); }
         function closeCalendar() { $('calModal').classList.remove('show'); }
         function closeLetter() { $('motiveModal').classList.remove('show'); }
-        function resetAll() { closePanel(); if (confirm('Reset everything?')) { D = { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, today: {}, nextId: 2, future: {}, swHistory: {}, goals: D.goals, nextGoalId: D.nextGoalId, gameLog: {} };
+        function resetAll() { closePanel(); if (confirm('Reset everything?')) { D = { wins: 0, impulses: 0, tasks: [{ id: 1, name: 'Make the bed', start: '07:00', end: '07:05' }], done: {}, nextId: 2, future: {}, swHistory: {}, goals: [{ id: 1, name: 'Read 12 books', done: false }], nextGoalId: 2, gameLog: {} };
             save();
             renderAll();
             toast('All reset'); } }
@@ -1108,8 +1160,9 @@
                     toast('Imported!'); } else { toast('Invalid file'); } } catch (err) { toast('Error'); } };
             reader.readAsText(file); }
         function toggleGameLog() { $('gameLogList').classList.toggle('show'); const log = (D.gameLog && D.gameLog[tk()]) ? D.gameLog[tk()] : [];
-            $('gameLogToggle').textContent = $('gameLogList').classList.contains('show') ? 'Today\'s moments ▴' : 'Today\'s moments (' + log.length + ') ▾'; }
+            $('gameLogToggle').textContent = $('gameLogList').classList.contains('show') ? 'Hide moments ▴' : (log.length > 0 ? 'Today\'s moments (' + log.length + ') ▾' : 'No moments today'); }
 
+        // Calendar modal
         let calViewMonth = new Date().getMonth(), calViewYear = new Date().getFullYear();
         function calPrev() { calViewMonth--;
             if (calViewMonth < 0) { calViewMonth = 11;
@@ -1125,8 +1178,8 @@
             ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => html += '<div style="font-size:9px;color:#C5C5C5;text-align:center;">' + d + '</div>');
             const startOffset = firstDay === 0 ? 6 : firstDay - 1;
             for (let i = 0; i < startOffset; i++) html += '<div></div>';
-            for (let d = 1; d <= daysInMonth; d++) { const key = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = D.done[key] === true ? total : (key === tk() ? tasks.filter(t => D.today[t.id] === true).length : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0; let cls = 'cal-cell-wrap'; if (key === tk()) cls += ' today';
-                html += '<div class="' + cls + '" data-key="' + key + '" onclick="calGoTo(\'' + key + '\')"><div class="cal-num">' + d + '</div><svg class="cal-mini-ring" viewBox="0 0 22 22"><circle class="cmr-bg" cx="11" cy="11" r="8"/><circle class="cmr-fill' + (D.done[key] === true ? ' done' : '') + '" cx="11" cy="11" r="8" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (pct / 100) * wrc) + '"/></svg></div>'; }
+            for (let d = 1; d <= daysInMonth; d++) { const key = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); const tasks = getTasksForDay(key); const comp = getCompletedForDay(key); const doneCount = tasks.filter(t => comp[t.id] === true).length; const total = tasks.length; const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0; let cls = 'cal-cell-wrap'; if (key === tk()) cls += ' today'; if (D.done && D.done[key] === true) cls += ' done';
+                html += '<div class="' + cls + '" data-key="' + key + '" onclick="calGoTo(\'' + key + '\')"><div class="cal-num">' + d + '</div><svg class="cal-mini-ring" viewBox="0 0 22 22"><circle class="cmr-bg" cx="11" cy="11" r="8"/><circle class="cmr-fill' + (D.done && D.done[key] === true ? ' done' : '') + '" cx="11" cy="11" r="8" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (pct / 100) * wrc) + '"/></svg></div>'; }
             $('calGrid').innerHTML = html;
         }
         function calGoTo(key) { const d = new Date(key);
@@ -1134,12 +1187,28 @@
             closeCalendar();
             renderAll(); }
 
-        const triggers = [{ q: 'The person you want to become is watching.', s: 'Don\'t let her down.' }, { q: 'No one is coming to save you.', s: 'This is YOUR moment.' }, { q: 'Pressure creates diamonds.', s: 'You\'re being forged right now.' }, { q: 'While others scroll, you build.', s: 'Discipline is freedom.' }, { q: 'The tide doesn\'t ask permission.', s: 'Neither should you.' }, { q: 'The summit is lonely for a reason.', s: 'Few are willing to climb.' }, { q: 'Today is a battle.', s: 'Pick up your sword.' }, { q: 'Your focus is the only light.', s: 'Guard it fiercely.' }, { q: 'Every completed task is a key.', s: 'Unlock your freedom.' }, { q: 'Excellence is a choice.', s: 'Made in moments like this.' }, { q: 'The lion doesn\'t beg the lamb.', s: 'Lead yourself.' }, { q: 'One focused day changes everything.', s: 'Make today that day.' }, { q: 'Peace comes from doing EVERYTHING.', s: 'Finish the chain. Then rest.' }, { q: 'The sun rises on a fresh battlefield.', s: '24 hours. Make them count.' }];
-        const letters = ["Dear you,\n\nI'm writing from one year ahead. Every single minute you invested is paying off. I speak fluently now. I landed the opportunity we dreamed about. I wake up without anxiety because you built the systems. You did that. The chain you're completing today? It forged me. Don't you dare stop.\n\nYour Future Self", "Hey,\n\nIt's you from the future. The person you become in 6 months is unrecognizable. Her confidence, her clarity, her peace — all because of mornings like this one. That compound effect? It's real. I'm living proof. Keep going.\n\nThe Best Version of You", "To the woman reading this,\n\nI know the doubt that creeps in at 6am. But I also know what happens when you override it — day after day. You build a life that most people only fantasize about. This is how. One chain. One day. One decision at a time.\n\nYou (from December)", "Dear Present Me,\n\nStop looking for motivation. You don't need it. You have something far more powerful: a system. A chain. A promise to yourself. Spoiler: it's beautiful here. I'm waiting for you. Come find me.\n\nYour Future Self"];
-        function showLetter() { const idx = Math.floor(Math.random() * letters.length);
+        // Letters — pool of unique letters, pick randomly, track used
+        const letters = [
+            "Dear you,\n\nI'm writing from one year ahead. I know today feels heavy — the endless tasks, the discipline, the same routine. But I need you to know: every single minute you invested is paying off. I speak fluently now. I landed the opportunity we dreamed about. I wake up without anxiety because you built the systems. You did that. The chain you're completing today? It forged me. Don't you dare stop.\n\nWith eternal gratitude,\nYour Future Self",
+            "Hey,\n\nIt's you from the future. I won't spoil everything, but I'll say this: the person you become in 6 months is unrecognizable. Her confidence, her clarity, her peace — all because of mornings like this one. When you wanted to skip yoga, you didn't. When English felt impossible, you pushed through. That compound effect? It's real. I'm living proof. Keep going. The transformation is already happening.\n\nLove,\nThe Best Version of You",
+            "To the woman reading this,\n\nYou don't know me yet, but I know you. I know the doubt that creeps in at 5am. I know the temptation to scroll instead of pray. But I also know what happens when you override it — day after day. You build a life that most people only fantasize about. You become the person others look at and wonder, 'How does she do it?' This is how. One chain. One day. One decision at a time.\n\nProudly,\nYou (from December)",
+            "Dear Present Me,\n\nStop looking for motivation. You don't need it. You have something far more powerful: a system. A chain. A promise to yourself. I'm writing this from a version of reality where you kept that promise. Spoiler: it's beautiful here. The view is worth every early morning, every 'no' to distraction, every 'yes' to discipline. I'm waiting for you. Come find me.\n\nYour Future Self",
+            "Hello from tomorrow,\n\nYou're probably tired right now. I remember this exact day — the weight of unfinished tasks, the mental battle. But here's what you can't see yet: this exact struggle is the turning point. In 3 months, you'll look back at this week and realize it was the moment everything shifted. The habit solidified. The identity changed. You stopped being someone who 'tries' and became someone who 'does'. That person is already inside you.\n\nKeep going,\nYou (already transformed)",
+            "My dear past self,\n\nI'm crying as I write this. Because I remember how hard it was. The loneliness of discipline. The fear that it wasn't working. But it WAS working. Every single day you showed up, you were planting seeds. And now? Now I'm standing in a forest. A life beyond what we imagined. The language you're learning? I speak it. The career you're building? It's here. The peace you're craving? It found me. Because you didn't quit.\n\nThank you,\nYour Future Self",
+            "You,\n\nYes, you. The one reading this at the end of a long chain. I want you to know something: most people never experience this feeling. The feeling of completing what they started. Of keeping a promise to themselves. You just did something extraordinary — you closed every loop. That's not normal. That's exceptional. That's the stuff of high achievers. Carry this feeling into tomorrow. Bottle it. This is your new standard.\n\nNow rest. You earned it.\n\nYour Future Self",
+            "Dear finisher,\n\nThere's a version of you in a parallel universe who gave up halfway. Who scrolled instead of studied. Who hit snooze instead of stretching. You are not her. You are the version who stayed. And that small decision — repeated hundreds of times — is what separates extraordinary lives from ordinary ones. You just widened the gap. The universe noticed.\n\nWith admiration,\nYour Highest Self"
+        ];
+        let usedLetters = [];
+
+        function showLetter() {
+            if (usedLetters.length >= letters.length) usedLetters = [];
+            const available = letters.filter((_, i) => !usedLetters.includes(i));
+            const idx = letters.indexOf(available[Math.floor(Math.random() * available.length)]);
+            usedLetters.push(idx);
             $('motiveQuote').textContent = letters[idx];
             $('motiveSub').textContent = '';
-            $('motiveModal').classList.add('show'); }
+            $('motiveModal').classList.add('show');
+        }
 
         function renderAll() {
             $('winScore').textContent = D.wins || 0;
@@ -1147,78 +1216,104 @@
             const t = (D.wins || 0) + (D.impulses || 0);
             $('barFill').style.width = t > 0 ? Math.round((D.wins / t) * 100) + '%' : '0%';
             $('ratioText').textContent = t > 0 ? D.wins + ':' + D.impulses + ' (' + Math.round((D.wins / t) * 100) + '%)' : '0:0';
+
+            // Streak
             let s = 0;
             const today = tk();
-            if (D.done[today] === true) { s = 1;
-                const d = new Date(); while (true) { d.setDate(d.getDate() - 1); if (D.done[dk(d)] === true) s++;
+            if (D.done && D.done[today] === true) { s = 1;
+                const d = new Date(); while (true) { d.setDate(d.getDate() - 1); if (D.done && D.done[dk(d)] === true) s++;
                     else break; } } else { const y = new Date();
-                y.setDate(y.getDate() - 1); if (D.done[dk(y)] === true) { s = 1;
-                    const d = new Date(y); while (true) { d.setDate(d.getDate() - 1); if (D.done[dk(d)] === true) s++;
+                y.setDate(y.getDate() - 1); if (D.done && D.done[dk(y)] === true) { s = 1;
+                    const d = new Date(y); while (true) { d.setDate(d.getDate() - 1); if (D.done && D.done[dk(d)] === true) s++;
                         else break; } } }
             $('streakDots').innerHTML = Array.from({ length: 7 }, (_, i) => '<div class="streak-dot' + (i < s ? ' on' : '') + '"></div>').join('') + '<span class="streak-num">' + s + ' days</span>';
+
+            // Mini calendar
             const cal = [];
             const now = new Date();
             for (let i = -3; i <= 10; i++) { const d = new Date(now);
                 d.setDate(now.getDate() + i); const key = dk(d);
-                cal.push({ key, num: d.getDate(), dow: ['S','M','T','W','T','F','S'][d.getDay()], isToday: i === 0, isSel: i === viewOffset, status: D.done[key] }); }
-            $('miniCal').innerHTML = cal.map(c => '<div class="mini-day' + (c.isToday ? ' today' : '') + (c.isSel ? ' selected' : '') + (c.status === true ? ' done' : '') + (c.status === false ? ' missed' : '') + '" onclick="goToDay(\'' + c.key + '\')"><span class="dow">' + c.dow + '</span><span class="num">' + c.num + '</span></div>').join('');
+                cal.push({ key, num: d.getDate(), dow: ['S','M','T','W','T','F','S'][d.getDay()], isToday: i === 0, isSel: i === viewOffset, done: D.done && D.done[key] === true, missed: D.done && D.done[key] === false }); }
+            $('miniCal').innerHTML = cal.map(c => '<div class="mini-day' + (c.isToday ? ' today' : '') + (c.isSel ? ' selected' : '') + (c.done ? ' done' : '') + (c.missed ? ' missed' : '') + '" onclick="goToDay(\'' + c.key + '\')"><span class="dow">' + c.dow + '</span><span class="num">' + c.num + '</span></div>').join('');
+
+            // Chain
             const vk = viewKey();
             const tasks = getTasksForDay(vk);
-            const comp = vk === today ? D.today : {};
+            const comp = getCompletedForDay(vk);
             const allDone = tasks.length > 0 && tasks.every(t => comp[t.id] === true);
             $('chainDate').textContent = new Date(vk).toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short' });
-            $('chainTodayBadge').textContent = vk === today ? "Today's Chain" : vk === dk(new Date(Date.now() - 86400000)) ? "Yesterday" : vk === dk(new Date(Date.now() + 86400000)) ? "Tomorrow" : '';
+            if (vk === today) $('chainTodayBadge').textContent = "Today's Chain";
+            else if (vk === dk(new Date(Date.now() - 86400000))) $('chainTodayBadge').textContent = "Yesterday";
+            else if (vk === dk(new Date(Date.now() + 86400000))) $('chainTodayBadge').textContent = "Tomorrow";
+            else $('chainTodayBadge').textContent = '';
             $('chainStatus').textContent = tasks.length === 0 ? 'no tasks' : allDone ? 'complete' : 'incomplete';
             $('chainStatus').className = 'chain-status ' + (allDone && tasks.length > 0 ? 'yes' : 'no');
             $('taskList').innerHTML = tasks.map(t => { const isDone = comp[t.id] === true; return '<div class="task' + (isDone ? ' done' : '') + '"><div class="task-dot' + (isDone ? ' done' : '') + '" onclick="toggleTask(' + t.id + ')">' + (isDone ? '✓' : '') + '</div><div class="task-info"><input class="task-name-input" value="' + esc(t.name) + '" data-id="' + t.id + '" data-field="name" oninput="updateField(' + t.id + ',this)"><div class="task-time-row"><input class="task-time-input" value="' + (t.start || '') + '" data-id="' + t.id + '" data-field="start" oninput="updateField(' + t.id + ',this)"><span style="color:#C1C0BD;">–</span><input class="task-time-input" value="' + (t.end || '') + '" data-id="' + t.id + '" data-field="end" oninput="updateField(' + t.id + ',this)"></div></div><div class="task-grip" onclick="moveUp(' + t.id + ')">⋮⋮</div><div class="task-del" onclick="delTask(' + t.id + ')">×</div></div>'; }).join('');
-            const chainRingFill = $('chainRingFill');
             const doneCount = tasks.filter(t => comp[t.id] === true).length;
-            const total = tasks.length;
-            const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-            chainRingFill.style.strokeDashoffset = RING - (pct / 100) * RING;
-            chainRingFill.classList.toggle('complete', pct === 100 && total > 0);
-            $('chainRingText').textContent = total > 0 ? pct + '%' : '—';
+            const totalTasks = tasks.length;
+            const pct = totalTasks > 0 ? Math.round((doneCount / totalTasks) * 100) : 0;
+            $('chainRingFill').style.strokeDashoffset = RING - (pct / 100) * RING;
+            $('chainRingFill').classList.toggle('complete', pct === 100 && totalTasks > 0);
+            $('chainRingText').textContent = totalTasks > 0 ? pct + '%' : '—';
+
+            // Stats
             $('streakDays').textContent = s;
-            $('totalDone').textContent = Object.values(D.done).filter(v => v === true).length;
-            $('totalMissed').textContent = Object.values(D.done).filter(v => v === false).length;
+            $('totalDone').textContent = Object.values(D.done || {}).filter(v => v === true).length;
+            $('totalMissed').textContent = Object.values(D.done || {}).filter(v => v === false).length;
+
+            // Week rings
             const wDays = getWeekDays();
             const wrc = 2 * Math.PI * 13;
             $('weekRings').innerHTML = wDays.map(d => '<div class="week-ring"><svg viewBox="0 0 34 34"><circle class="wr-bg" cx="17" cy="17" r="13"/><circle class="wr-fill' + (d.done && d.total > 0 ? ' done' : '') + '" cx="17" cy="17" r="13" stroke-dasharray="' + wrc.toFixed(1) + '" stroke-dashoffset="' + (wrc - (d.pct / 100) * wrc) + '"/></svg><span>' + d.label + ' ' + d.date + '</span></div>').join('');
+
+            // Goals
             const doneGoals = D.goals.filter(g => g.done).length;
             const totalGoals = D.goals.length;
             $('goalsSummary').innerHTML = '<span>' + doneGoals + '/' + totalGoals + ' completed</span><span>' + (totalGoals > 0 ? Math.round((doneGoals / totalGoals) * 100) : 0) + '%</span>';
             $('goalsExpanded').innerHTML = D.goals.map(g => '<div class="goal-item"><div class="goal-check' + (g.done ? ' done' : '') + '" onclick="toggleGoal(' + g.id + ')">' + (g.done ? '✓' : '') + '</div><span class="goal-name">' + esc(g.name) + '</span><span class="goal-del" onclick="delGoal(' + g.id + ')">×</span></div>').join('');
+
+            // Game log
             const log = (D.gameLog && D.gameLog[tk()]) ? D.gameLog[tk()] : [];
-            $('gameLogToggle').textContent = log.length === 0 ? 'No moments today' : 'Today\'s moments (' + log.length + ') ' + ($('gameLogList').classList.contains('show') ? '▴' : '▾');
+            $('gameLogToggle').textContent = log.length === 0 ? 'No moments today' : ($('gameLogList').classList.contains('show') ? 'Hide moments ▴' : 'Today\'s moments (' + log.length + ') ▾');
             $('gameLogList').innerHTML = log.slice().reverse().map(l => '<div class="game-log-item"><span class="gl-type ' + l.type + '">' + (l.type === 'win' ? 'Win' : 'Impulse') + '</span><span class="gl-reason">' + esc(l.reason) + '</span></div>').join('');
-            const swHistory = (D.swHistory && D.swHistory[tk()]) ? D.swHistory[tk()] : [];
-            $('swHistory').innerHTML = swHistory.length === 0 ? '<div style="font-size:10px;color:#C5C5C5;text-align:center;padding:10px 0;">No records today</div>' : swHistory.slice().reverse().map((h, i) => '<div class="sw-history-item"><span class="sw-h-task">' + esc(h.task) + '</span><span class="sw-h-time">' + swFmt(h.seconds) + '</span><span class="sw-h-del" onclick="delSw(' + (swHistory.length - 1 - i) + ')">×</span></div>').join('');
-            const manifestIdx = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000) % 14;
-            const mfsts = ["Today, the universe aligns for your focus.", "The energy you bring today will ripple through your entire week.", "You are not here to be average. You are here to be extraordinary.", "Clarity comes from action. Move through your chain.", "Your future self is already thanking you.", "Small hinges swing big doors.", "The world gives to those who know what they want.", "Peace is not found. It is built.", "You have 24 hours. That's 1440 minutes.", "The difference between who you are and who you want to be is what you do today.", "Your habits are your destiny.", "Be the woman who decided to go for it.", "You are exactly where you need to be.", "Every master was once a beginner who refused to quit."];
-            $('manifestBox').textContent = '✦ ' + mfsts[manifestIdx];
+
+            // Stopwatch history
+            const swHist = (D.swHistory && D.swHistory[tk()]) ? D.swHistory[tk()] : [];
+            $('swHistory').innerHTML = swHist.length === 0 ? '<div style="font-size:10px;color:#C5C5C5;text-align:center;padding:10px 0;">No records today</div>' : swHist.slice().reverse().map((h, i) => '<div class="sw-history-item"><span class="sw-h-task">' + esc(h.task) + '</span><span class="sw-h-time">' + swFmt(h.seconds) + '</span><span class="sw-h-del" onclick="delSw(' + (swHist.length - 1 - i) + ')">×</span></div>').join('');
+
+            // Manifestation
+            const mfsts = ["Today, the universe aligns for your focus.", "The energy you bring today will ripple through your entire week.", "You are not here to be average.", "Clarity comes from action.", "Your future self is already thanking you.", "Small hinges swing big doors.", "The world gives to those who know what they want.", "Peace is not found. It is built.", "You have 24 hours. That's 1440 minutes.", "The difference between who you are and who you want to be is what you do today.", "Your habits are your destiny.", "Be the woman who decided to go for it.", "You are exactly where you need to be.", "Every master was once a beginner who refused to quit."];
+            $('manifestBox').textContent = '✦ ' + mfsts[Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000) % mfsts.length];
             save();
         }
 
         function goToDay(key) { const todayD = new Date(); const d = new Date(key);
             viewOffset = Math.round((d - new Date(todayD.getFullYear(), todayD.getMonth(), todayD.getDate())) / 86400000);
             renderAll(); }
-        function toggleTask(id) { if (viewKey() !== tk()) return;
-            D.today[id] = !D.today[id]; const tasks = D.tasks; const allDone = tasks.length > 0 && tasks.every(t => D.today[t.id] === true);
-            D.done[tk()] = allDone ? true : false; if (allDone) setTimeout(showLetter, 500);
+        function toggleTask(id) {
+            const vk = viewKey();
+            const comp = getCompletedForDay(vk);
+            const newVal = !comp[id];
+            setCompletedForDay(vk, id, newVal);
+            const tasks = getTasksForDay(vk);
+            const updatedComp = getCompletedForDay(vk);
+            const allDone = tasks.length > 0 && tasks.every(t => updatedComp[t.id] === true);
+            if (allDone) { if (!D.done) D.done = {}; D.done[vk] = true;
+                save();
+                setTimeout(showLetter, 500); }
             save();
             renderAll(); }
-        function delTask(id) { if (!confirm('Delete?')) return; const vk = viewKey(); if (vk === tk()) { D.tasks = D.tasks.filter(t => t.id !== id);
-                delete D.today[id]; } else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
-            D.future[vk] = D.future[vk].filter(t => t.id !== id); }
+        function delTask(id) { if (!confirm('Delete?')) return; const vk = viewKey(); if (vk === tk()) { D.tasks = D.tasks.filter(t => t.id !== id); if (D.today) delete D.today[id]; } else { if (!D.future) D.future = {}; if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
+            D.future[vk] = D.future[vk].filter(t => t.id !== id); if (D.future[vk]._completed) delete D.future[vk]._completed[id]; }
             save();
             renderAll(); }
-        function moveUp(id) { const vk = viewKey(); let tasks = vk === tk() ? D.tasks : (D.future[vk] || []); if (vk !== tk() && !D.future[vk]) { D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
+        function moveUp(id) { const vk = viewKey(); let tasks = vk === tk() ? D.tasks : (D.future && D.future[vk] ? D.future[vk] : []); if (vk !== tk() && (!D.future || !D.future[vk])) { if (!D.future) D.future = {}; D.future[vk] = JSON.parse(JSON.stringify(D.tasks));
             tasks = D.future[vk]; } const idx = tasks.findIndex(t => t.id === id); if (idx <= 0) return;
             [tasks[idx - 1], tasks[idx]] = [tasks[idx], tasks[idx - 1]]; if (vk === tk()) D.tasks = tasks;
-            else D.future[vk] = tasks;
+            else { if (!D.future) D.future = {}; D.future[vk] = tasks; }
             save();
             renderAll(); }
-        function updateField(id, el) { const vk = viewKey(); const field = el.dataset.field; const value = el.value; if (vk === tk()) { const t = D.tasks.find(t => t.id === id); if (t) t[field] = value; } else { if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks)); const t = D.future[vk].find(t => t.id === id); if (t) t[field] = value; } save(); }
+        function updateField(id, el) { const vk = viewKey(); const field = el.dataset.field; const value = el.value; if (vk === tk()) { const t = D.tasks.find(t => t.id === id); if (t) t[field] = value; } else { if (!D.future) D.future = {}; if (!D.future[vk]) D.future[vk] = JSON.parse(JSON.stringify(D.tasks)); const t = D.future[vk].find(t => t.id === id); if (t) t[field] = value; } save(); }
         function toggleGoal(id) { const g = D.goals.find(g => g.id === id); if (g) g.done = !g.done;
             save();
             renderAll(); }
@@ -1235,8 +1330,8 @@
             const mon = new Date(today);
             mon.setDate(today.getDate() + monOff);
             for (let i = 0; i < 7; i++) { const d = new Date(mon);
-                d.setDate(mon.getDate() + i); const key = dk(d); const tasks = getTasksForDay(key); const total = tasks.length; const doneCount = key === tk() ? (D.today ? tasks.filter(t => D.today[t.id] === true).length : 0) : (D.done[key] === true ? total : 0); const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-                days.push({ key, label: ['M','T','W','T','F','S','S'][i], date: d.getDate(), isToday: key === tk(), pct, total, done: D.done[key] === true }); }
+                d.setDate(mon.getDate() + i); const key = dk(d); const tasks = getTasksForDay(key); const comp = getCompletedForDay(key); const doneCount = tasks.filter(t => comp[t.id] === true).length; const total = tasks.length; const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+                days.push({ key, label: ['M','T','W','T','F','S','S'][i], date: d.getDate(), isToday: key === tk(), pct, total, done: D.done && D.done[key] === true }); }
             return days;
         }
         function esc(s) { const d = document.createElement('div');
@@ -1244,11 +1339,6 @@
         function toast(msg) { $('toast').textContent = msg;
             $('toast').classList.add('show');
             setTimeout(() => $('toast').classList.remove('show'), 1800); }
-
-        const last = localStorage.getItem('bm_last_date');
-        if (last !== tk()) { D.today = {}; if (D.future[tk()]) { D.tasks = JSON.parse(JSON.stringify(D.future[tk()]));
-                delete D.future[tk()]; } localStorage.setItem('bm_last_date', tk());
-            setTimeout(showLetter, 800); }
 
         renderAll();
     </script>
